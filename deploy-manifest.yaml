@@ -1,0 +1,21 @@
+# Replace <AWS_ACCT_ID> and <REGION>
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-demo
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: back-end
+          image: <AWS_ACCT_ID>.dkr.ecr.<REGION>.amazonaws.com/eks-app:latest
+          ports:
+            - containerPort: 3000
