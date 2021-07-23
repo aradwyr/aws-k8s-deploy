@@ -1,55 +1,104 @@
-## NodeJS in AWS EKS Deployment
+## NodeJS Deployment to AWS EKS
 
-Command Line Tools: 
+### Prereq: CLI Tools
+<details>
+<summary>AWS CLI</summary>
+<br>
+
 ```
-$ curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
-$ sudo installer -pkg AWSCLIV2.pkg -target /
-$ aws --version
-aws-cli/2.2.18 Python/3.8.8 Darwin/20.4.0 exe/x86_64 prompt/off
-
-# install kubectl 
-$ curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/darwin/amd64/kubectl
-$ chmod +x ./kubectl 
-$ mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
-$ echo 'export PATH=$PATH:$HOME/bin' >> ~/.bash_profile
-$ kubectl version --short --client
-# Client Version: v1.20.4-eks-6b7464
-
-# install eksctl
-$ brew install weaveworks/tap/eksctl
-
-# or instead update eksctl 
-$ brew upgrade eksctl && brew link --overwrite eksctl
-$ eksctl version 
-# 0.56.0
+curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
 ```
-- [IAM requirements docs](https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html#create-worker-node-role) for worker nodes
-**IAM > Create Role > EC2 > Next: Permissions >** check the boxes for both of these policies: 
-    - `AmazonEC2ContainerRegistryReadOnly`
-    - `AmazonEKSWorkerNodePolicy`
-    - `AmazonEKS_CNI_Policy` 
-- Create EKS Cluster, then verify worker nodes with:
+
 ```
-$ kubectl get nodes
+sudo installer -pkg AWSCLIV2.pkg -target /
 ```
-- Create AWS ECR repo: eks-app 
-- Replace <aws_account_id> and <region>
+
 ```
-$ aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
-# Login Succeeded
+aws --version
+```
+</details>
 
-$ docker build -t eks-app .
+<details>
+<summary>kubectl</summary>
+<br>
 
-$ docker tag eks-app:latest <aws_account_id>.dkr.ecr.<region>.amazonaws.com/eks-app:latest
+```
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/darwin/amd64/kubectl
+```
+```
+chmod +x ./kubectl 
+```
+```
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+```
+```
+echo 'export PATH=$PATH:$HOME/bin' >> ~/.bash_profile
+```
+```
+kubectl version --short --client
+```
+</details>
 
-$ docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/eks-app:latest
+<details>
+<summary>eksctl</summary>
+<br>
 
-$ aws eks --region <region> update-kubeconfig --name <ex-app>
-$ kubectl get nodes
-$ kubectl create -f deploy-manifest.yaml
-$ kubectl create -f service-manifest.yaml 
-$ kubectl get nodes  -o wide
-# Take note of the external IPs
+```
+brew install weaveworks/tap/eksctl
+```
+or instead update:
+```
+brew upgrade eksctl && brew link --overwrite eksctl
+```
+```
+eksctl version 
+```
+</details>
+<br>
+
+### Setup
+[IAM requirements docs](https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html#create-worker-node-role) for worker nodes
+**IAM > Create Role > EC2 > Next: Permissions >** check the boxes for these policies: 
+- `AmazonEC2ContainerRegistryReadOnly`
+- `AmazonEKSWorkerNodePolicy`
+- `AmazonEKS_CNI_Policy` 
+
+Create EKS Cluster, then create node group only once cluster is `ACTIVE`, then verify worker nodes with:
+```
+kubectl get nodes
+```
+
+Create AWS ECR repo: `ex-app`
+
+Replace `<aws_account_id>` and `<region>` below:
+```
+aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+```
+Expected Output: `Login Succeeded`
+
+```
+docker build -t ex-app .
+```
+
+```
+docker tag eks-app:latest <aws_account_id>.dkr.ecr.<region>.amazonaws.com/ex-app:latest
+```
+```
+docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/ex-app:latest
+```
+
+```
+aws eks --region <region> update-kubeconfig --name <ex-app>
+```
+```
+kubectl get nodes
+```
+```
+kubectl create -f ./release
+```
+To get the **EXTERNAL IP**:
+```
+kubectl get nodes  -o wide
 ```
 - Modify Node security group's inbound rules by adding a custom TCP port `31479` (as defined in the `service-manifest.yaml`) with `0.0.0.0/0` as the source  
 - Now visit the listed `<External-IP>:31479` to view the basic app
@@ -58,5 +107,8 @@ $ kubectl get nodes  -o wide
 ## Teardown
 ```
 kubectl delete deployments,svc --all 
+```
+
+```
 eksctl delete cluster --region=<region> --name=<ex-app>
 ```
