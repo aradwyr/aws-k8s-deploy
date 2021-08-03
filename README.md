@@ -110,5 +110,13 @@ kubectl delete deployments,svc --all
 ```
 
 ```
+aws eks list-nodegroups --cluster-name <ex-app>
+```
+
+```
+aws eks delete-nodegroup --nodegroup-name <node-group-workers> --cluster-name <ex-app>
+```
+
+```
 eksctl delete cluster --region=<region> --name=<ex-app>
 ```
