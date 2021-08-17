@@ -1,4 +1,9 @@
 ## NodeJS Deployment to AWS EKS
+---
+### Security Best Practices
+This is a basic Kubernetes demo app, for an example demo of hacking into a cluster [view this](https://www.youtube.com/watch?v=L_ej12aahNI)  
+
+-----
 
 ### Prereq: CLI Tools
 <details>
@@ -55,6 +60,8 @@ eksctl version
 ```
 </details>
 <br>
+
+---
 
 ### Setup
 [IAM requirements docs](https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html#create-worker-node-role) for worker nodes
