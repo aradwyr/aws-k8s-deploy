@@ -59,7 +59,6 @@ brew upgrade eksctl && brew link --overwrite eksctl
 eksctl version 
 ```
 </details>
-<br>
 
 ---
 
@@ -84,14 +83,14 @@ aws ecr get-login-password --region <region> | docker login --username AWS --pas
 Expected Output: `Login Succeeded`
 
 ```
-docker build -t ex-app .
+docker build -t <ex-app> .
 ```
 
 ```
-docker tag eks-app:latest <aws_account_id>.dkr.ecr.<region>.amazonaws.com/ex-app:latest
+docker tag eks-app:latest <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<ex-app>:latest
 ```
 ```
-docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/ex-app:latest
+docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<ex-app>:latest
 ```
 
 ```
